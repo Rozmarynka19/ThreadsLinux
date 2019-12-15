@@ -1,5 +1,31 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
+
+float globalSum=0.0;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void* threadCode(void *argument)
+{
+  float threadSum=0;
+  float *array=(float *)argument;
+  int arraySize = sizeof(array)/sizeof(float);
+  pthread_t currentThreadID = pthread_self();
+
+  printf("Thread #%ld arraySize=%d\n",currentThreadID,arraySize);
+
+  for(int i=0;i<arraySize;i++)
+    threadSum+=array[i];
+  //printf("In threadCode:\targument:%p\n",argument);
+  //printf("In threadCode:\tarray:%p\n",array);
+  printf("Thread #%ld threadSum=%f\n",currentThreadID,threadSum);
+
+  pthread_mutex_lock(&mutex);
+  globalSum+=threadSum;
+  pthread_mutex_unlock(&mutex);
+
+  return 0;
+}
 
 int main(int argc, char *argv[]){
   if(argc>3){
@@ -88,7 +114,11 @@ int main(int argc, char *argv[]){
       printf("%f\n",dividedArray[threads-1][j]);
   //}
 
+  pthread_t threadID;
+  pthread_create(&threadID,NULL,threadCode,dividedArray[0]);
 
+pthread_join(threadID,NULL);
+//freeing allocated memory
   for(int i=0;i<threads;i++)
     free(dividedArray[i]);
   free(dividedArray);
