@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <pthread.h>
 
-float sum=0.0;
+float globalSum=0.0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* threadCode(void *argument)
@@ -10,15 +10,19 @@ void* threadCode(void *argument)
   float threadSum=0;
   float *array=(float *)argument;
   int arraySize = sizeof(array)/sizeof(float);
-  pthread_t current = pthread_self();
+  pthread_t currentThreadID = pthread_self();
 
-  printf("Thread #%ld arraySize=%d\n",current,arraySize);
+  printf("Thread #%ld arraySize=%d\n",currentThreadID,arraySize);
 
   for(int i=0;i<arraySize;i++)
     threadSum+=array[i];
   //printf("In threadCode:\targument:%p\n",argument);
   //printf("In threadCode:\tarray:%p\n",array);
-  printf("Thread #%ld threadSum=%d\n",current,threadSum);
+  printf("Thread #%ld threadSum=%f\n",currentThreadID,threadSum);
+
+  pthread_mutex_lock(&mutex);
+  globalSum+=threadSum;
+  pthread_mutex_unlock(&mutex);
 
   return 0;
 }
