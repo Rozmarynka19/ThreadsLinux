@@ -89,5 +89,8 @@ int main(int argc, char *argv[]){
   //}
 
 
+  for(int i=0;i<threads;i++)
+    free(dividedArray[i]);
+  free(dividedArray);
   return 0;
 }
