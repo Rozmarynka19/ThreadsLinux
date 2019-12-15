@@ -9,12 +9,13 @@ void* threadCode(void *argument)
 {
   float threadSum=0;
   float *array=(float *)argument;
-  int arraySize = sizeof(array)/sizeof(float);
+  int arraySize=array[0];
+  //int arraySize = sizeof(array)/sizeof(float); //it doesn't work cause dividing pointer size by size of float
   pthread_t currentThreadID = pthread_self();
 
   printf("Thread #%ld arraySize=%d\n",currentThreadID,arraySize);
 
-  for(int i=0;i<arraySize;i++)
+  for(int i=1;i<arraySize;i++)
     threadSum+=array[i];
   //printf("In threadCode:\targument:%p\n",argument);
   //printf("In threadCode:\tarray:%p\n",array);
@@ -97,30 +98,38 @@ int main(int argc, char *argv[]){
     float **dividedArray=malloc(sizeof(float*)*threads);
 
     for(int i=0;i<threads-1;i++)
-      dividedArray[i]=malloc(sizeof(float)*divide);
-    dividedArray[threads-1]=malloc(sizeof(float)*(divide+remainder));
+      dividedArray[i]=malloc(sizeof(float)*divide+1);
+    dividedArray[threads-1]=malloc(sizeof(float)*(divide+remainder+1));
 
     for(int i=0,k=0;i<noOfData-divide-remainder;k++)
-      for(int j=0;j<divide;j++,i++)
+    {
+      dividedArray[k][0]=divide;
+      for(int j=1;j<divide+1;j++,i++)
         dividedArray[k][j]=data[i];
-    for(int i=noOfData-divide-remainder,j=0;i<noOfData;j++,i++)
+    }
+    dividedArray[threads-1][0]=divide+remainder;
+    for(int i=noOfData-divide-remainder,j=1;i<noOfData;j++,i++)
       dividedArray[threads-1][j]=data[i];
 
     printf("After distributing the numbers:\n");
     for(int i=0;i<threads-1;i++)
-      for(int j=0;j<divide;j++)
+      for(int j=0;j<divide+1;j++)
         printf("%f\n",dividedArray[i][j]);
-    for(int j=0;j<divide+remainder;j++)
+    for(int j=0;j<divide+remainder+1;j++)
       printf("%f\n",dividedArray[threads-1][j]);
   //}
 
-  pthread_t threadID;
-  pthread_create(&threadID,NULL,threadCode,dividedArray[0]);
+pthread_t *threadIDs=malloc(sizeof(pthread_t)*threads);
+for(int i=0;i<threads;i++)
+  pthread_create(threadIDs+i,NULL,threadCode,dividedArray[i]);
 
-pthread_join(threadID,NULL);
+for(int i=0;i<threads;i++)
+  pthread_join(threadIDs[i],NULL);
+
 //freeing allocated memory
   for(int i=0;i<threads;i++)
     free(dividedArray[i]);
   free(dividedArray);
+  free(threadIDs);
   return 0;
 }
