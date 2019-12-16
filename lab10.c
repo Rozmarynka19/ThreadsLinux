@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <time.h>
 
 float globalSum=0.0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -120,11 +121,23 @@ int main(int argc, char *argv[]){
   //}
 
 pthread_t *threadIDs=malloc(sizeof(pthread_t)*threads);
+clock_t start=clock();
 for(int i=0;i<threads;i++)
   pthread_create(threadIDs+i,NULL,threadCode,dividedArray[i]);
 
 for(int i=0;i<threads;i++)
   pthread_join(threadIDs[i],NULL);
+clock_t stop=clock();
+
+printf("w/Threads: globalSum=%f, time=%fs\n",globalSum,(stop-start)/(float)CLOCKS_PER_SEC);
+
+globalSum=0.0;
+start=clock();
+for(int i=0;i<noOfData;i++)
+  globalSum+=data[i];
+stop=clock();
+
+printf("wo/Threads: globalSum=%f, time=%fs\n",globalSum,(stop-start)/(float)CLOCKS_PER_SEC);
 
 //freeing allocated memory
   for(int i=0;i<threads;i++)
