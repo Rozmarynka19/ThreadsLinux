@@ -16,8 +16,10 @@ void* threadCode(void *argument)
 
   printf("Thread #%ld arraySize=%d\n",currentThreadID,arraySize);
 
-  for(int i=1;i<arraySize;i++)
+  for(int i=1;i<arraySize+1;i++){
+    printf("%f\n",array[i]);
     threadSum+=array[i];
+    }
   //printf("In threadCode:\targument:%p\n",argument);
   //printf("In threadCode:\tarray:%p\n",array);
   printf("Thread #%ld threadSum=%f\n",currentThreadID,threadSum);
@@ -66,11 +68,11 @@ int main(int argc, char *argv[]){
   for(int i=0;i<noOfData;i++)
     data[i]=1000.*rand()/RAND_MAX;
 
-  printf("After drawing the numbers:\n");
+  /*printf("After drawing the numbers:\n");
   for(int i=0;i<noOfData;i++)
     printf("%f\n",data[i]);
 
-  printf("\n\n");
+  printf("\n\n");*/
 
   //distributing data to other arrays
   /*if(noOfData%threads==0)
